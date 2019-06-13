@@ -42,20 +42,80 @@ int preencher_file_buffer(FILE* arquivo, char* buffer, long buffer_size)
 
 arquivo_invertido* criar_arquivo_invertido(void)
 {
-  arquivo_invertido* arqv_invertido = (arquivo_invertido*) malloc(sizeof(arquivo_invertido));
-  
-  if (arqv_invertido != NULL)
+  arquivo_invertido* arqv_invert = (arquivo_invertido*) malloc(sizeof(arquivo_invertido));
+
+  if (arqv_invert != NULL)
   {
-    arqv_invertido->count_vocabulario = 0;
-    arqv_invertido->itens = (item_arquivo_invertido*) malloc(sizeof(item_arquivo_invertido) * TAM_VOCABULARIO);
-    arqv_invertido->itens_alocados = TAM_VOCABULARIO;
+    arqv_invert->count_vocabulario = 0;
+    arqv_invert->itens = (item_arquivo_invertido*) malloc(sizeof(item_arquivo_invertido) * TAM_VOCABULARIO);
+    arqv_invert->itens_aloc = TAM_VOCABULARIO;
   }
 }
 
-void destruir_arquivo_invertido(arquivo_invertido* arqv_invertido)
+void destruir_arquivo_invertido(arquivo_invertido* arqv_invert)
 {
-  free(arqv_invertido->itens);
-  free(arqv_invertido);
+  free(arqv_invert->itens);
+  free(arqv_invert);
+}
+
+item_arquivo_invertido* procurar_palavra(arquivo_invertido* arqv_invert, char* palavra, int size_palavra)
+{
+  return NULL;
+}
+
+int preencher_arquivo_invertido(arquivo_invertido* arqv_invert, char* buffer, long buffer_size)
+{
+  char palavra[TAM_PALAVRA];
+  int count;
+  int count_palavra = 0;
+  for (int i = 0; i < buffer_size; i++)
+  {
+    if (buffer[i] == ' ')
+    {
+      if (strlen(palavra) != 0)
+      {
+        item_arquivo_invertido* item = procurar_palavra(arqv_invert, palavra, count_palavra);
+        if (item == NULL)
+        {
+          count = arqv_invert->count_vocabulario++;
+          if (arqv_invert->count_vocabulario > arqv_invert->itens_aloc)
+          {
+            arqv_invert->itens_aloc *= 2;
+            arqv_invert->itens = (item_arquivo_invertido*) realloc(arqv_invert->itens, sizeof(item_arquivo_invertido) * arqv_invert->itens_aloc);
+          }
+          if (arqv_invert->itens == NULL)
+          {
+            return ERROR;
+          }
+          memcpy(arqv_invert->itens[count].palavra, palavra, count_palavra);
+          arqv_invert->itens[count].ocorrencias = (int*) malloc(sizeof(int) * TAM_OCORRENCIAS);
+          arqv_invert->itens[count].ocorrencias_aloc = TAM_OCORRENCIAS;
+          arqv_invert->itens[count].count_ocorrencias = 1;
+          arqv_invert->itens[count].ocorrencias[0] = i - count_palavra;
+        }
+        else
+        {
+          count = item->count_ocorrencias++;
+          if (item->count_ocorrencias > item->ocorrencias_aloc)
+          {
+            item->ocorrencias_aloc *= 2;
+            item->ocorrencias = (int*) realloc(item->ocorrencias, sizeof(int) * item->ocorrencias_aloc);
+          }
+          if (item->ocorrencias == NULL)
+          {
+            return ERROR;
+          }
+          item->ocorrencias[count] = i - count_palavra;
+        }
+      }
+      count_palavra = 0;
+    }
+    else
+    {
+      palavra[count_palavra++] = buffer[i];
+    }
+  }
+  return SUCCESS;
 }
 
 void gerar_arquivo_invertido(void)
@@ -71,7 +131,7 @@ void gerar_arquivo_invertido(void)
   if (buffer_size == ERROR)
   {
     printf("Erro ao contar o tamanho do arquivo.\n");
-    return; 
+    return;
   }
 
   char* buffer = (char*) malloc(sizeof(char) * buffer_size + 1);
@@ -89,42 +149,19 @@ void gerar_arquivo_invertido(void)
 
   fechar_arquivo(arquivo);
 
-  arquivo_invertido* arqv_invertido = criar_arquivo_invertido();
-  
-  char palavra[TAM_PALAVRA];
-  int count_vocabulario;
-  int count_palavra = 0;
-  for (int i = 0; i < buffer_size; i++)
+  arquivo_invertido* arqv_invert = criar_arquivo_invertido();
+
+  if (preencher_arquivo_invertido(arqv_invert, buffer, buffer_size) == ERROR)
   {
-    if (buffer[i] == ' ')
-    {
-      if (strlen(palavra) != 0)
-      {
-        count_vocabulario = arqv_invertido->count_vocabulario++;
-        if (arqv_invertido->count_vocabulario > arqv_invertido->itens_alocados)
-        {
-          arqv_invertido->itens_alocados *= 2;
-          arqv_invertido->itens = realloc(arqv_invertido->itens, sizeof(item_arquivo_invertido) * arqv_invertido->itens_alocados);
-        }
-        if (arqv_invertido->itens == NULL)
-        {
-          printf("Erro ao gerar arquivo invertido.\n");
-          return;
-        }
-        memcpy(arqv_invertido->itens[count_vocabulario].palavra, palavra, count_palavra);
-      }
-      count_palavra = 0;
-    }
-    else
-    {
-      palavra[count_palavra++] = buffer[i];
-    }
+    printf("Erro ao gerar arquivo invertido.\n");
+    return;
   }
 
-  for (int i = 0; i < arqv_invertido->count_vocabulario; i++)
+  for (int i = 0; i < arqv_invert->count_vocabulario; i++)
   {
-    printf("%s \n", arqv_invertido->itens[i].palavra);
+    printf("%s \n", arqv_invert->itens[i].palavra);
   }
+
   free(buffer);
-  destruir_arquivo_invertido(arqv_invertido);
+  destruir_arquivo_invertido(arqv_invert);
 }

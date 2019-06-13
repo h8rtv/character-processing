@@ -13,15 +13,16 @@
 struct _item_arquivo_invertido
 {
   char palavra[TAM_PALAVRA];
-  int count_ocorrencias;
-  int ocorrencias[TAM_OCORRENCIAS];
+  unsigned count_ocorrencias;
+  unsigned ocorrencias_aloc;
+  int* ocorrencias;
 };
 typedef struct _item_arquivo_invertido item_arquivo_invertido;
 
 struct _arquivo_invertido
 {
   unsigned count_vocabulario;
-  unsigned itens_alocados;
+  unsigned itens_aloc;
   item_arquivo_invertido* itens;
 };
 typedef struct _arquivo_invertido arquivo_invertido;
@@ -31,7 +32,8 @@ FILE* ler_arquivo(void);
 void fechar_arquivo(FILE*);
 long get_tamanho_arquivo(FILE*);
 int preencher_file_buffer(FILE*, char*, long);
-
+int preencher_arquivo_invertido(arquivo_invertido*, char*, long);
+item_arquivo_invertido* procurar_palavra(arquivo_invertido*, char*, int);
 void gerar_arquivo_invertido(void);
 
 #endif

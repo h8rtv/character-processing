@@ -15,5 +15,4 @@ char* get_menu_info(void);
 funcao* get_menu_jump_table(void);
 void menu(void);
 
-
 #endif

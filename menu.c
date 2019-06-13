@@ -39,7 +39,7 @@ void menu(void)
   {
     printf("%s", menu_info);
     opcao = get_opcao();
-    
+
     if (opcao_valida(opcao))
     {
       jump_table[opcao - 1]();
@@ -50,5 +50,5 @@ void menu(void)
     }
     else break;
   }
-  while(0);
+  while(1);
 }
