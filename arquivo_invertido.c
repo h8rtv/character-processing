@@ -1,6 +1,5 @@
 #include "arquivo_invertido.h"
 
-
 FILE* ler_arquivo(void)
 {
   return fopen("Historia.txt", "r");
@@ -72,10 +71,11 @@ item_arquivo_invertido* procurar_palavra(arquivo_invertido* arqv_invert, char* p
 
 int preencher_arquivo_invertido(arquivo_invertido* arqv_invert, char* buffer, long buffer_size)
 {
+  int size_char = 1;
   char palavra[TAM_PALAVRA];
   int count;
   int count_palavra = 0;
-  for (int i = 0; i < buffer_size; i++)
+  for (int i = 0; i < buffer_size; i += size_char)
   {
     if (buffer[i] == ' ')
     {
@@ -118,7 +118,7 @@ int preencher_arquivo_invertido(arquivo_invertido* arqv_invert, char* buffer, lo
       }
       count_palavra = 0;
     }
-    else
+    else if (eh_caracter_valido(buffer, i, &size_char))
     {
       palavra[count_palavra++] = buffer[i];
     }
@@ -164,16 +164,59 @@ void gerar_arquivo_invertido(void)
     printf("Erro ao gerar arquivo invertido.\n");
     return;
   }
-  
-  for (int i = 0; i < arqv_invert->count_vocabulario; i++, putchar('\n'))
-  {
-    printf("%s ", arqv_invert->itens[i].palavra);
-    for (int j = 0; j < arqv_invert->itens[i].count_ocorrencias; j++)
-    {
-      printf("%d ", arqv_invert->itens[i].ocorrencias[j]);
-    }
-  }
+
+  // for (int i = 0; i < arqv_invert->count_vocabulario; i++, putchar('\n'))
+  // {
+  //   printf("%s ", arqv_invert->itens[i].palavra);
+  //   for (int j = 0; j < arqv_invert->itens[i].count_ocorrencias; j++)
+  //   {
+  //     printf("%d ", arqv_invert->itens[i].ocorrencias[j]);
+  //   }
+  // }
 
   free(buffer);
   destruir_arquivo_invertido(arqv_invert);
+}
+
+int eh_caracter_valido(char* buffer, int pos, int* size_char)
+{
+  int count_bytes_valido;
+  char* CARACTERES_ESPECIAIS_VALIDOS = "áàãâéẽêíìóôú";
+
+  *size_char = count_bytes_utf8(buffer, pos);
+
+  for (int i = pos; i < pos + *size_char; i++)
+  {
+    for (int j = 0; j < 12; j += count_bytes_valido)
+    {
+      count_bytes_valido = count_bytes_utf8(CARACTERES_ESPECIAIS_VALIDOS, j);
+      for (int k = j; k < j + count_bytes_valido; k++)
+      {
+        if (CARACTERES_ESPECIAIS_VALIDOS[k] != buffer[i])
+        {
+          return 0;
+        }
+      }
+    }
+  }
+  return 1;
+}
+
+int count_bytes_utf8(char* buffer, int pos)
+{
+  if (buffer[pos] >> 7 == 0)
+  {
+    return 0;
+  }
+  else
+  {
+    char cmp_byte = 128;
+    int count_bytes = 1;
+    while (buffer[pos] & cmp_byte)
+    {
+      ++count_bytes;
+      cmp_byte >>= 1;
+    }
+    return count_bytes - 1;
+  }
 }

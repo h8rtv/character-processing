@@ -35,5 +35,7 @@ int preencher_file_buffer(FILE*, char*, long);
 int preencher_arquivo_invertido(arquivo_invertido*, char*, long);
 item_arquivo_invertido* procurar_palavra(arquivo_invertido*, char*);
 void gerar_arquivo_invertido(void);
+int count_bytes_utf8(char*, int);
+int eh_caracter_valido(char*, int, int*);
 
 #endif
