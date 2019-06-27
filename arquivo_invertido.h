@@ -33,7 +33,7 @@ void fechar_arquivo(FILE*);
 long get_tamanho_arquivo(FILE*);
 int preencher_file_buffer(FILE*, char*, long);
 int preencher_arquivo_invertido(arquivo_invertido*, char*, long);
-item_arquivo_invertido* procurar_palavra(arquivo_invertido*, char*, int);
+item_arquivo_invertido* procurar_palavra(arquivo_invertido*, char*);
 void gerar_arquivo_invertido(void);
 
 #endif

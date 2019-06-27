@@ -58,8 +58,15 @@ void destruir_arquivo_invertido(arquivo_invertido* arqv_invert)
   free(arqv_invert);
 }
 
-item_arquivo_invertido* procurar_palavra(arquivo_invertido* arqv_invert, char* palavra, int size_palavra)
+item_arquivo_invertido* procurar_palavra(arquivo_invertido* arqv_invert, char* palavra)
 {
+  for (int i = 0; i < arqv_invert->count_vocabulario; i++)
+  {
+    if (strcmp(arqv_invert->itens[i].palavra, palavra) == 0)
+    {
+      return &arqv_invert->itens[i];
+    }
+  }
   return NULL;
 }
 
@@ -74,7 +81,8 @@ int preencher_arquivo_invertido(arquivo_invertido* arqv_invert, char* buffer, lo
     {
       if (strlen(palavra) != 0)
       {
-        item_arquivo_invertido* item = procurar_palavra(arqv_invert, palavra, count_palavra);
+        palavra[count_palavra] = '\0';
+        item_arquivo_invertido* item = procurar_palavra(arqv_invert, palavra);
         if (item == NULL)
         {
           count = arqv_invert->count_vocabulario++;
@@ -156,10 +164,14 @@ void gerar_arquivo_invertido(void)
     printf("Erro ao gerar arquivo invertido.\n");
     return;
   }
-
-  for (int i = 0; i < arqv_invert->count_vocabulario; i++)
+  
+  for (int i = 0; i < arqv_invert->count_vocabulario; i++, putchar('\n'))
   {
-    printf("%s \n", arqv_invert->itens[i].palavra);
+    printf("%s ", arqv_invert->itens[i].palavra);
+    for (int j = 0; j < arqv_invert->itens[i].count_ocorrencias; j++)
+    {
+      printf("%d ", arqv_invert->itens[i].ocorrencias[j]);
+    }
   }
 
   free(buffer);
