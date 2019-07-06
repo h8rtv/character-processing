@@ -7,8 +7,8 @@
 #define SUCCESS 0
 
 #define TAM_VOCABULARIO 500
-#define TAM_PALAVRA 35
-#define TAM_OCORRENCIAS 10
+#define TAM_PALAVRA 50
+#define TAM_OCORRENCIAS 2
 
 struct _item_arquivo_invertido
 {
@@ -37,5 +37,6 @@ item_arquivo_invertido* procurar_palavra(arquivo_invertido*, char*);
 void gerar_arquivo_invertido(void);
 int count_bytes_utf8(char*, int);
 int eh_caracter_valido(char*, int, int*);
+void print_arquivo_invertido(arquivo_invertido*);
 
 #endif

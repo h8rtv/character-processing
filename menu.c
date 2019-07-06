@@ -37,7 +37,7 @@ void menu(void)
   char* menu_info = get_menu_info();
   do
   {
-    printf("%s", menu_info);
+    printf("\n%s\n", menu_info);
     opcao = get_opcao();
 
     if (opcao_valida(opcao))

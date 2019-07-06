@@ -1,0 +1,2 @@
+gcc -o out main.c menu.c arquivo_invertido.c
+./out
