@@ -6,7 +6,7 @@
 
 #define SAIR 0
 #define NRO_OPCOES 4
-#define TAM_STRING_VIEW 20
+#define TAM_STRING_VIEW 25
 
 typedef void (*funcao)(state*);
 

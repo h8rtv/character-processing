@@ -47,7 +47,9 @@ int finaliza_palavra(char c)
          c == ','  ||
          c == '.'  ||
          c == '!'  ||
-         c == '?';
+         c == '?'  ||
+         c == ':'  ||
+         c == ';';
 }
 
 int preencher_arquivo_invertido(arquivo_invertido* arqv_invert, char* buffer, long buffer_size)
@@ -213,7 +215,7 @@ void print_arquivo_invertido(arquivo_invertido* arqv_invert)
     printf("%s ", arqv_invert->itens[i].palavra);
     for (int j = 0; j < arqv_invert->itens[i].count_ocorrencias; j++)
     {
-      printf("%d e %d, ", arqv_invert->itens[i].ocorrencias[j], arqv_invert->itens[i].ocorrencias_real[j]);
+      printf("%d ", arqv_invert->itens[i].ocorrencias[j]);
     }
   }
 }

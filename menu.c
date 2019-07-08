@@ -45,7 +45,6 @@ void menu(void)
   funcao* jump_table = get_menu_jump_table();
   char* menu_info = get_menu_info();
   state* s = criar_state();
-  s->arqv_invert = criar_arquivo_invertido();
   s->buffer = gerar_buffer("Historia.txt", &s->buffer_size);
   do
   {
@@ -71,6 +70,16 @@ void menu(void)
 
 void opcao_1(state* s)
 {
+  if (s->arqv_invert  == NULL)
+  {
+    s->arqv_invert = criar_arquivo_invertido();
+  }
+  else
+  {
+    destruir_arquivo_invertido(s->arqv_invert);
+    s->arqv_invert = criar_arquivo_invertido();
+  }
+  
   gerar_arquivo_invertido(s->arqv_invert, s->buffer, s->buffer_size);
 }
 
@@ -105,7 +114,7 @@ void opcao_3(state* s)
       printf("Ocorrência atual: %d°\n", i + 1);
       printf("Posição: %d|Posição no buffer: %d\n\n", item->ocorrencias[i] ,item->ocorrencias_real[i]);
       printf("%.*s\n\n", TAM_STRING_VIEW * 2, s->buffer + max(item->ocorrencias_real[i] - TAM_STRING_VIEW, 0));
-      printf("0 - Sair\n");
+      printf("0 - Voltar\n");
       printf("1 - Ir para a ocorrência anterior\n");
       printf("2 - Ir para a ocorrência posterior\n");
       scanf("%d", &opcao);
