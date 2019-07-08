@@ -1,44 +1,5 @@
 #include "arquivo_invertido.h"
 
-FILE* ler_arquivo(void)
-{
-  return fopen("Historia.txt", "r");
-}
-
-void fechar_arquivo(FILE* arquivo)
-{
-  fclose(arquivo);
-}
-
-long get_tamanho_arquivo(FILE* arquivo)
-{
-  if (fseek(arquivo, 0L, SEEK_END) != SUCCESS)
-  {
-    return ERROR;
-  }
-
-  long buffer_size = ftell(arquivo);
-  if (fseek(arquivo, 0L, SEEK_SET) != SUCCESS)
-  {
-    return ERROR;
-  }
-  return buffer_size;
-}
-
-int preencher_file_buffer(FILE* arquivo, char* buffer, long buffer_size)
-{
-  size_t length = fread(buffer, sizeof(char), buffer_size, arquivo);
-  if (ferror(arquivo))
-  {
-    return ERROR;
-  }
-  else
-  {
-    buffer[length++] = '\0';
-    return SUCCESS;
-  }
-}
-
 arquivo_invertido* criar_arquivo_invertido(void)
 {
   arquivo_invertido* arqv_invert = (arquivo_invertido*) malloc(sizeof(arquivo_invertido));
@@ -53,12 +14,17 @@ arquivo_invertido* criar_arquivo_invertido(void)
 
 void destruir_arquivo_invertido(arquivo_invertido* arqv_invert)
 {
-  for (int i = 0; i < arqv_invert->count_vocabulario; i++)
+  if (arqv_invert != NULL)
   {
-    free(arqv_invert->itens[i].ocorrencias);
+    for (int i = 0; i < arqv_invert->count_vocabulario; i++)
+    {
+      free(arqv_invert->itens[i].ocorrencias);
+      free(arqv_invert->itens[i].ocorrencias_real);
+      free(arqv_invert->itens[i].palavra);
+    }
+    free(arqv_invert->itens);
+    free(arqv_invert);
   }
-  free(arqv_invert->itens);
-  free(arqv_invert);
 }
 
 item_arquivo_invertido* procurar_palavra(arquivo_invertido* arqv_invert, char* palavra)
@@ -73,6 +39,17 @@ item_arquivo_invertido* procurar_palavra(arquivo_invertido* arqv_invert, char* p
   return NULL;
 }
 
+int finaliza_palavra(char c)
+{
+  return c == ' '  ||
+         c == '\n' ||
+         c == '\r' ||
+         c == ','  ||
+         c == '.'  ||
+         c == '!'  ||
+         c == '?';
+}
+
 int preencher_arquivo_invertido(arquivo_invertido* arqv_invert, char* buffer, long buffer_size)
 {
   int j;
@@ -81,13 +58,15 @@ int preencher_arquivo_invertido(arquivo_invertido* arqv_invert, char* buffer, lo
   char palavra[TAM_PALAVRA];
   int count;
   int count_palavra = 0;
+  int count_palavra_real = 0;
+  int texto_passado_real = 0;
   while (i < buffer_size)
   {
-    if (buffer[i] == ' ' || buffer[i] == '\n')
+    if (finaliza_palavra(buffer[i]))
     {
-      if (strlen(palavra) != 0)
+      if (count_palavra != 0)
       {
-        palavra[count_palavra] = '\0';
+        palavra[count_palavra++] = '\0';
         item_arquivo_invertido* item = procurar_palavra(arqv_invert, palavra);
         if (item == NULL)
         {
@@ -101,11 +80,14 @@ int preencher_arquivo_invertido(arquivo_invertido* arqv_invert, char* buffer, lo
           {
             return ERROR;
           }
+          arqv_invert->itens[count].palavra = (char*) malloc(sizeof(char) * count_palavra);
           memcpy(arqv_invert->itens[count].palavra, palavra, count_palavra);
           arqv_invert->itens[count].ocorrencias = (int*) malloc(sizeof(int) * TAM_OCORRENCIAS);
+          arqv_invert->itens[count].ocorrencias_real = (int*) malloc(sizeof(int) * TAM_OCORRENCIAS);
           arqv_invert->itens[count].ocorrencias_aloc = TAM_OCORRENCIAS;
           arqv_invert->itens[count].count_ocorrencias = 1;
-          arqv_invert->itens[count].ocorrencias[0] = i - count_palavra;
+          arqv_invert->itens[count].ocorrencias[0] = texto_passado_real - count_palavra_real + 1;
+          arqv_invert->itens[count].ocorrencias_real[0] = i - count_palavra + 1;
         }
         else
         {
@@ -114,16 +96,20 @@ int preencher_arquivo_invertido(arquivo_invertido* arqv_invert, char* buffer, lo
           {
             item->ocorrencias_aloc *= 2;
             item->ocorrencias = (int*) realloc(item->ocorrencias, sizeof(int) * item->ocorrencias_aloc);
+            item->ocorrencias_real = (int*) realloc(item->ocorrencias_real, sizeof(int) * item->ocorrencias_aloc);
           }
           if (item->ocorrencias == NULL)
           {
             return ERROR;
           }
-          item->ocorrencias[count] = i - count_palavra;
+          item->ocorrencias[count] = texto_passado_real - count_palavra_real + 1;
+          item->ocorrencias_real[count] = i - count_palavra + 1;
         }
       }
       count_palavra = 0;
+      count_palavra_real = 0;
       i++;
+      texto_passado_real++;
     }
     else if (eh_caracter_valido(buffer, i, &size_char))
     {
@@ -132,62 +118,32 @@ int preencher_arquivo_invertido(arquivo_invertido* arqv_invert, char* buffer, lo
         palavra[count_palavra + j] = buffer[i++];
       }
       count_palavra += j;
+      count_palavra_real++;
+      texto_passado_real++;
     }
-    else i++;
+    else
+    {
+      i++;
+      texto_passado_real++;
+    }
+      
   }
   return SUCCESS;
 }
 
-void gerar_arquivo_invertido(void)
+void gerar_arquivo_invertido(arquivo_invertido* arqv_invert, char* buffer, long buffer_size)
 {
-  FILE* arquivo = ler_arquivo();
-  if (arquivo == NULL)
-  {
-    printf("Erro ao ler o arquivo.\n");
-    return;
-  }
-
-  long buffer_size = get_tamanho_arquivo(arquivo);
-  if (buffer_size == ERROR)
-  {
-    printf("Erro ao contar o tamanho do arquivo.\n");
-    return;
-  }
-
-  char* buffer = (char*) malloc(sizeof(char) * buffer_size + 1);
-  if (buffer == NULL)
-  {
-    printf("Erro ao alocar buffer.\n");
-    return;
-  }
-
-  if (preencher_file_buffer(arquivo, buffer, buffer_size) == ERROR)
-  {
-    printf("Erro ao preencher buffer.\n");
-    return;
-  }
-
-  fechar_arquivo(arquivo);
-
-  arquivo_invertido* arqv_invert = criar_arquivo_invertido();
-
   if (preencher_arquivo_invertido(arqv_invert, buffer, buffer_size) == ERROR)
   {
     printf("Erro ao gerar arquivo invertido.\n");
-    return;
   }
-
-  print_arquivo_invertido(arqv_invert);
-
-  free(buffer);
-  destruir_arquivo_invertido(arqv_invert);
 }
 
 int eh_caracter_valido(char* buffer, int pos, int* size_char)
 {
   int count_bytes_valido = 1;
   int is_valid;
-  char* VALID_X_CHAR = "áàãâéẽêíìóôúç";
+  char* VALID_X_CHAR = "áàãâéẽêíìóôúÁÀÃÂÉẼÊÍÌÓÔÚç";
   int SIZE_VALID_X_CHAR = strlen(VALID_X_CHAR);
   *size_char = count_bytes_utf8(buffer, pos);
 
@@ -195,7 +151,7 @@ int eh_caracter_valido(char* buffer, int pos, int* size_char)
   {
     return buffer[pos] >= 'A' && buffer[pos] <= 'Z' ||
            buffer[pos] >= 'a' && buffer[pos] <= 'z' ||
-           buffer[pos] == '-' /* && buffer[pos + 1] != ' ' && buffer[pos - 1] != ' ' */;
+           buffer[pos] == '-' && buffer[pos + 1] != ' ' && buffer[pos - 1] != ' ';
   }
 
 
@@ -247,12 +203,17 @@ int count_bytes_utf8(char* buffer, int pos)
 
 void print_arquivo_invertido(arquivo_invertido* arqv_invert)
 {
+  if (arqv_invert == NULL)
+  {
+    printf("O arquivo invertido não foi carregado.\n");
+    return;
+  }
   for (int i = 0; i < arqv_invert->count_vocabulario; i++, putchar('\n'))
   {
     printf("%s ", arqv_invert->itens[i].palavra);
     for (int j = 0; j < arqv_invert->itens[i].count_ocorrencias; j++)
     {
-      printf("%d ", arqv_invert->itens[i].ocorrencias[j]);
+      printf("%d e %d, ", arqv_invert->itens[i].ocorrencias[j], arqv_invert->itens[i].ocorrencias_real[j]);
     }
   }
 }

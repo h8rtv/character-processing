@@ -1,2 +1,2 @@
-gcc -o out main.c menu.c arquivo_invertido.c
+gcc -o out main.c menu.c arquivo_invertido.c file.c state.c
 ./out

@@ -2,17 +2,22 @@
 #define MENU_H
 
 #include "stdlibs.h"
-#include "arquivo_invertido.h"
+#include "state.h"
 
 #define SAIR 0
-#define NRO_OPCOES 2
+#define NRO_OPCOES 4
+#define TAM_STRING_VIEW 20
 
-typedef void (*funcao)(void);
+typedef void (*funcao)(state*);
 
 int opcao_valida(int);
 int get_opcao(void);
 char* get_menu_info(void);
 funcao* get_menu_jump_table(void);
 void menu(void);
+
+void opcao_1(state*);
+void opcao_2(state*);
+void opcao_3(state*);
 
 #endif

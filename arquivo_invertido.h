@@ -3,19 +3,17 @@
 
 #include "stdlibs.h"
 
-#define ERROR 1
-#define SUCCESS 0
-
-#define TAM_VOCABULARIO 500
+#define TAM_VOCABULARIO 100
 #define TAM_PALAVRA 50
 #define TAM_OCORRENCIAS 2
 
 struct _item_arquivo_invertido
 {
-  char palavra[TAM_PALAVRA];
+  char* palavra;
   unsigned count_ocorrencias;
   unsigned ocorrencias_aloc;
   int* ocorrencias;
+  int* ocorrencias_real;
 };
 typedef struct _item_arquivo_invertido item_arquivo_invertido;
 
@@ -27,16 +25,13 @@ struct _arquivo_invertido
 };
 typedef struct _arquivo_invertido arquivo_invertido;
 
-
-FILE* ler_arquivo(void);
-void fechar_arquivo(FILE*);
-long get_tamanho_arquivo(FILE*);
-int preencher_file_buffer(FILE*, char*, long);
 int preencher_arquivo_invertido(arquivo_invertido*, char*, long);
 item_arquivo_invertido* procurar_palavra(arquivo_invertido*, char*);
-void gerar_arquivo_invertido(void);
+void gerar_arquivo_invertido(arquivo_invertido*, char*, long);
+arquivo_invertido* criar_arquivo_invertido();
 int count_bytes_utf8(char*, int);
 int eh_caracter_valido(char*, int, int*);
 void print_arquivo_invertido(arquivo_invertido*);
+void destruir_arquivo_invertido(arquivo_invertido*);
 
 #endif
