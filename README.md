@@ -1,3 +1,3 @@
 # character-processing
 
-College project for some character processing features!
+College project for some character processing functions.
